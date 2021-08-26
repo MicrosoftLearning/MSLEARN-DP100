@@ -22,15 +22,17 @@ To use automated machine learning, you require compute on which to run the model
 1. Sign into [Azure Machine Learning studio](https://ml.azure.com?azure-portal=true) with the Microsoft credentials associated with your Azure subscription, and select your Azure Machine Learning workspace.
 2. In Azure Machine Learning studio, view the **Compute** page; and on the **Compute instances** tab, start your compute instance if it is not already running. You will use this compute instance to test your trained model.
 3. While the compute instance is starting, switch to the **Compute clusters** tab, and add a new compute cluster with the following settings. You'll run the automated machine learning experiment on this cluster to take advantage of the ability to distribute the training runs across multiple compute nodes:
-    - **Region**: *The same region as your workspace*
+    - **Location**: *The same location as your workspace*
     - **Virtual Machine priority**: Dedicated
     - **Virtual Machine type**: CPU
     - **Virtual Machine size**: Standard_DS11_v2
+    - Click on Next button
     - **Compute name**: *enter a unique name*
     - **Minimum number of nodes**: 0
     - **Maximum number of nodes**: 2
     - **Idle seconds before scale down**: 120
     - **Enable SSH access**: Unselected
+    - Click on **Create**
 
 ## Create a dataset
 
@@ -48,6 +50,7 @@ Now that you have some compute resources that you can use to process data, you'l
         * **Select files for your dataset**: Browse to the **diabetes.csv** file you downloaded.
         * **Upload path**: *Leave the default selection*
         * **Skip data validation**: Not selected
+        *  click next
     * **Settings and preview**:
         * **File format**: Delimited
         * **Delimiter**: Comma
@@ -71,20 +74,24 @@ In Azure Machine Learning, operations that you run are called *experiments*. Fol
 2. Create a new Automated ML run with the following settings:
     - **Select dataset**:
         - **Dataset**: diabetes dataset
+        -  click next
     - **Configure run**:
         - **New experiment name**: mslearn-automl-diabetes
         - **Target column**: Diabetic (*this is the label the model will be trained to predict)*
         - **Select compute cluster**: *the compute cluster you created previously*
+        -  click next
     - **Task type and settings**:
         - **Task type**: Classification
-        - **Additional configuration settings:**
+        - click on **Additional configuration settings:**
             - **Primary metric**: Select **AUC_Weighted** *(more about this metric later!)*
             - **Explain best model**: Selected - *this option causes automated machine learning to calculate feature importance for the best model; making it possible to determine the influence of each feature on the predicted label.*
-            - **Blocked algorithms**: Leave all algorithms selected
+            - **Blocked algorithms**: Leave all algorithms as selected
             - **Exit criterion**:
                 - **Training job time (hours)**: 0.5 - *this causes the experiment to end after a maximum of 30 minutes.*
                 - **Metric score threshold**: 0.90 - *this causes the experiment to end if a model achieves a weighted AUC metric of 90% or higher.*
-        - **Featurization settings:**
+                - **Validation type**: auto
+                - **Max Concurrent Iterations**: 2
+        - click on **Featurization settings:**
             - **Enable featurization**: Selected - *this causes Azure Machine Learning to automatically preprocess the features before training.*
 
 3. When you finish submitting the automated ML run details, it will start automatically. You can observe the status of the run in the **Properties** pane.
@@ -101,7 +108,7 @@ After the experiment has finished; you can review the best performing model that
     The best model is identified based on the evaluation metric you specified (*AUC_Weighted*). To calculate this metric, the training process used some of the data to train the model, and applied a technique called *cross-validation* to iteratively test the trained model with data it wasn't trained with and compare the predicted value with the actual known value. From these comparisons, a *confusion matrix* of true-positives, false-positives,true-negatives, and false-negatives is tabulated and additional classification metrics calculated - including a Receiving Operator Curve (ROC) chart that compares the True-Positive rate and False-Positive rate. The area under this curve (AUC) us a common metric used to evaluate classification performance.
 3. Next to the *AUC_Weighted* value, select **View all other metrics** to see values of other possible evaluation metrics for a classification model.
 4. Select the **Metrics** tab and review the performance metrics you can view for the model. These include a **confusion_matrix** visualization showing the confusion matrix for the validated model, and an **accuracy_table** visualization that includes the ROC chart.
-5. Select the **Explanations** tab, select an **Explanation ID**, and then view the **Aggregate Importance** page. This shows the extent to which each feature in the dataset influences the label prediction.
+5. Select the **Explanations** tab, select an **Explanation ID**, and then view the **Aggregate Feature Importance** page. This shows the extent to which each feature in the dataset influences the label prediction.
 
 ## Deploy a predictive service
 
@@ -115,7 +122,7 @@ After you've used automated machine learning to train some models, you can deplo
     - **Description**: Predict diabetes
     - **Compute type**: ACI
     - **Enable authentication**: Selected
-3. Wait for the deployment to start - this may take a few seconds. Then, on the **Model** tab, in the **Model summary** section, observe the **Deploy status** for the **auto-predict-diabetes** service, which should be **Running**. Wait for this status to change to **Successful**. You may need to select **&#8635; Refresh** periodically.  **NOTE** This can take a while - be patient!
+3. Wait for the deployment to start - this may take a few seconds. Then, on the **Model** tab, in the **Model summary** section, observe the **Deploy status** for the **auto-predict-diabetes** service, which should be **Running**. Wait for this state to change to **Successful**. You may need to select **&#8635; Refresh** periodically.  **NOTE** This can take a while - be patient!
 4. In Azure Machine Learning studio, view the **Endpoints** page and select the **auto-predict-diabetes** real-time endpoint. Then select the **Consume** tab and note the following information there. You need this information to connect to your deployed service from a client application.
     - The REST endpoint for your service
     - the Primary Key for your service
